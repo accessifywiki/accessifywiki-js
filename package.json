@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "name": "accessifywiki-js",
+  "version": "0.5.0+legacy",
+  "description": "Bookmarklet Javascript etc. to apply AccessifyHTML5.js (WAI-ARIA fixes) to various web sites.",
+  "x-copyright": "Copyright © Nick Freear, 28 March 2013.",
+  "license": "GPL-3.0+",
+  "homepage": "https://accessifywiki.github.io/use.html",
+  "repository": "https://github.com/nfreear/accessify-wiki.git",
+  "author": "Nick Freear",
+  "contributors": [],
+  "engines": { "node": ">= 9" },
+  "dependencies": {},
+  "peerDependencies": {
+    "accessifyhtml5-orig": "git+https://github.com/yatil/accessifyhtml5.js.git#d0e2f7bfabf4",
+    "accessifyhtml5.js": "git+https://github.com/nfreear/accessifyhtml5.js.git#2.0.0"
+  },
+  "devDependencies": {
+    "semistandard": "^13.0.1"
+  },
+  "scripts": {
+    "test": "semistandard"
+  },
+  "keywords": [ "accessibility", "bookmarklet" ]
+}

@@ -1,0 +1,21 @@
+
+language: node_js
+
+node_js: 9
+
+cache:
+  directories:
+    - node_modules
+
+git:
+  depth: 5
+
+# install: npm install
+
+# before_script: npm run build
+
+# script: npm test
+
+# after_script: ??
+
+# End.
