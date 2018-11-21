@@ -19,6 +19,7 @@
     "semistandard": "^13.0.1"
   },
   "scripts": {
+    "fix": "semistandard --fix",
     "test": "semistandard"
   },
   "keywords": [ "accessibility", "bookmarklet" ]

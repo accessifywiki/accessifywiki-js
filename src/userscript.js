@@ -5,50 +5,45 @@
 // @match http://*/*
 // @match https://*/*
 // @grant none
-// @version 0.5.0.20130722
+// @version 0.8.0.20181121
 // @copyright Nick Freear.
 // @downloadURL https://accessifywiki--1.appspot.com/browser/userjs/accessify.user.js
 // @updateURL https://accessifywiki--1.appspot.com/browser/userjs/accessify.meta.js
 // ==/UserScript==
 
-/*global GM_info, log */
-/*jslint browser:true, devel:true, todo:true, indent:2 */
+/* -- jslint browser:true, devel:true, todo:true, indent:2 */
 
-(function () {
+(function (W, D, GM_INFO) {
+  'use strict';
 
-  "use strict";
+  var src = 'https://accessifywiki--1.appspot.com/browser/js/accessifyhtml5-marklet.js';
 
-  var src = "//accessifywiki--1.appspot.com/browser/js/accessifyhtml5-marklet.js",
-  //raw.github.com/nfreear/accessify-wiki/webapp2/browser/js/accessifyhtml5-marklet.js,
-    nocache = false;
+  // raw.github.com/nfreear/accessify-wiki/webapp2/browser/js/accessifyhtml5-marklet.js,
+
+  var nocache = false;
 
   // Do not support frames for the moment.
-  if (window.parent !== window) {
+  if (W.parent !== W) {
     return;
   }
 
-  if (typeof GM_info !== "undefined") {
-    log(GM_info.script.name);
+  if (typeof GM_INFO !== 'undefined') {
+    console.warn(GM_INFO.script.name);
   }
 
+  // if (typeof GM_info === "undefined") {
+  // Not Greasemonkey - assume @require not used.
+  console.warn('No @require - accessify.user.js');
 
-  //if (typeof GM_info === "undefined") {
-    // Not Greasemonkey - assume @require not used.
-    log("No @require - accessify.user.js");
+  var s = D.createElement('script');
+  s.src = src + (nocache ? '?r=' + Math.random() : '');
+  s.type = 'text/javascript';
+  s.charset = 'utf-8';
 
-    var s = document.createElement("script");
-    s.src = src + (nocache ? "?r=" + Math.random() : "");
-    s.type = "text/javascript";
-    s.charset = "utf-8";
-    document.body.appendChild(s);
-  //}
+  D.body.appendChild(s);
 
-
-  function log() {if (typeof console === "object") {console.log(arguments); } }
-
-})();
-
-
+  // }
+})(window, document, window.GM_info);
 
 /*
  DONE: Setup redirect http://freear.org.uk/accessify >> https://views.scraperwiki.com/run/accessify-wiki

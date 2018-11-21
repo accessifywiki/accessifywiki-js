@@ -6,40 +6,37 @@
  https://github.com/nfreear/accessify-wiki
 */
 
-/*global clearTimeout, AccessifyHTML5, log, setIcon, AC5U, t */
-/*jslint browser:true, devel:true, indent:2 */
+/* -- jslint browser:true, devel:true, indent:2 */
 
 window.AC5U = window.AC5U || {};
 
-(function () {
+(function (W, D, L, UA, G, AccessifyHTML5) {
+  'use strict';
 
-  "use strict";
+  var script = 'https://accessifywiki--1.appspot.com/browser/js/accessifyhtml5.js';
+  var style = 'https://accessifywiki--1.appspot.com/browser/pix/marklet.css';
+  var callback = '__callback';
 
-  var
-    D = document,
-    DL = D.location,
-    G = window.AC5U,
-    script = "//accessifywiki--1.appspot.com/browser/js/accessifyhtml5.js",
-    style = "//accessifywiki--1.appspot.com/browser/pix/marklet.css",
-    callback = "__callback",
-    fixes_url = "//accessifywiki--1.appspot.com/fix?min=1&callback=window.AC5U.",
-    home_url = "http://accessify.wikia.com",
-    home = home_url.replace(/https?:\/\//, ''),
-    lang = i18nSetup(),
-    query_timeout = 15 * 1000, // Milli-seconds
-    store_max_age = 15 * 60, // Seconds
-    store_type = 'sessionStorage', //Or 'local'
-    store_prefix = 'acfy.' + lang + '.',
-    s_fixes,
-    th,
-    lang = i18nSetup(),
-    b_exit = browserFeatures(),
-    logi,
-    logp;
+  var fixesUrl = 'https://accessifywiki--1.appspot.com/fix?min=1&callback=window.AC5U.';
 
+  const HOME_URL = 'https://accessify.wikia.com';
+  const HOME = HOME_URL.replace(/https?:\/\//, '');
 
-  if (b_exit) {
-    log(b_exit + ". " + t("Exiting"));
+  const LANG = i18nSetup();
+
+  const QUERY_TIMEOUT = 15 * 1000; // Milli-seconds
+  const STORE_MAX_AGE = 15 * 60; // Seconds
+  const STORE_TYPE = 'sessionStorage'; // Or 'local'
+  const STORE_PREFIX = 'acfy.' + LANG + '.';
+
+  const B_EXIT = browserFeatures();
+
+  var th;
+  var logi;
+  var logp;
+
+  if (B_EXIT) {
+    log(B_EXIT + '. ' + t('Exiting'));
     return;
   }
 
@@ -50,136 +47,127 @@ window.AC5U = window.AC5U || {};
   attachCallback();
 
   // AC5U global. HACK - Inject test fixes.
-  s_fixes = G.test_fixes ? G.test_fixes : getStorage();
+  const S_FIXES = G.test_fixes ? G.test_fixes : getStorage();
 
-  if (s_fixes) {
-
-    log(t("Getting cached fixes."));
+  if (S_FIXES) {
+    log(t('Getting cached fixes.'));
 
     addScript(script, function () {
-      G[callback](s_fixes);
+      G[ callback ](S_FIXES);
     });
-
   } else {
-    fixes_url += callback + "&url=" + encodeURIComponent(DL.href) + "&lang=" + lang;
+    fixesUrl += callback + '&url=' + encodeURIComponent(L.href) + '&lang=' + LANG;
 
-    log(t("Querying for fixes.."), DL.host, fixes_url);
+    log(t('Querying for fixes..'), L.host, fixesUrl);
 
-    th = setTimeout(function () {
-      log(t("Unknown problem/ too slow/ fixes not allowed (security)"));
-      setIcon("unknown");
-    }, query_timeout);
+    th = W.setTimeout(function () {
+      log(t('Unknown problem/ too slow/ fixes not allowed (security)'));
+      setIcon('unknown');
+    }, QUERY_TIMEOUT);
 
     addScript(script);
-    addScript(fixes_url);
+    addScript(fixesUrl);
   }
-
 
   // ======================================================
 
-  function attachCallback() {
+  function attachCallback () {
     // Callback is global. (window["callback"])
-    G[callback] = function (rsp) {
-      var res,
-        fixes = rsp,
-        config = rsp['_CONFIG_'] || null;
+    G[ callback ] = function (rsp) {
+      var fixes = rsp;
+      var config = rsp[ '_CONFIG_' ] || null;
 
-      clearTimeout(th);
+      W.clearTimeout(th);
 
-      if (typeof rsp.stat !== "undefined" && rsp.stat === "fail") {
+      if (typeof rsp.stat !== 'undefined' && rsp.stat === 'fail') {
         log(rsp.message, rsp.code);
-        setIcon("fail");
+        setIcon('fail');
 
-        if (404 !== parseInt(rsp.code)) {
+        if (parseInt(rsp.code) !== 404) {
           return;
         }
 
-        setIcon("not_found");
-        //log("Sorry, no domain matched.\n", host);
-        log(t("To add some fixes please visit our site") +"   \n\n  ›› " + home + "\n");
-
+        setIcon('not_found');
+        // log("Sorry, no domain matched.\n", host);
+        log(t('To add some fixes please visit our site') + '   \n\n  ›› ' + HOME + '\n');
       } else {
-
         if (config && Object.size(fixes) <= 1) {
-          setIcon("need_fixes");
+          setIcon('need_fixes');
           log(t("There are no fixes yet - probably a 'Stub'."));
-          log(t("To add some fixes please visit our site") + "   \n\n  ›› " + home + "\n");
+          log(t('To add some fixes please visit our site') + '   \n\n  ›› ' + HOME + '\n');
           return;
         }
 
-        log(t("Fixes found."), fixes);
+        log(t('Fixes found.'), fixes);
 
-        res = AccessifyHTML5(false, fixes);
+        var res = AccessifyHTML5(false, fixes);
 
         addFixStyles(fixes);
 
         if (res.fail.length > 0) {
-          setIcon("fail");
+          setIcon('fail');
         } else {
-          setIcon("ok");
+          setIcon('ok');
         }
 
-        log(t("OK.") + " " +
-        t("%nFixes fixes applied, %nErrors errors.", {
-          "%nFixes": res.ok.length, "%nErrors": res.fail.length}) + " \n", res);
-        log(t("To add some fixes please visit our site") + "   \n\n  ›› " + home + "\n");
+        log(t('OK.') + ' ' +
+        t('%nFixes fixes applied, %nErrors errors.', {
+          '%nFixes': res.ok.length, '%nErrors': res.fail.length }) + ' \n', res);
+        log(t('To add some fixes please visit our site') + '   \n\n  ›› ' + HOME + '\n');
       }
 
-      if (!s_fixes) {
-        setStorage(rsp);  // Fixes or 404 Not Found response.
+      if (!S_FIXES) {
+        setStorage(rsp); // Fixes or 404 Not Found response.
       }
     };
   }
 
-  // http://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-IE
-  function addScript(src, onload) {
-    var s = D.createElement("script");
+  // https://stackoverflow.com/questions/4845762/onload-handler-for-script-tag-in-IE
+  function addScript (src, onload) {
+    var s = D.createElement('script');
     s.src = src;
-    s.type = "text/javascript";
-    s.charset = "utf-8";
-    //s.setAttribute("async", "");
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    // s.setAttribute("async", "");
     if (onload) {
-      //for nonIE browsers.
+      // for nonIE browsers.
       s.onload = onload;
 
-      //for IE browsers.
+      // for IE browsers.
       ieLoadBugFix(s, onload);
     }
     D.body.appendChild(s);
-    //D.getElementsByTagName("body")[0].appendChild(s);
+    // D.getElementsByTagName("body")[0].appendChild(s);
   }
 
-  function addStyle() {
-    var s = D.createElement("link");
+  function addStyle () {
+    var s = D.createElement('link');
     s.href = style;
-    s.rel = "stylesheet";
+    s.rel = 'stylesheet';
     D.body.appendChild(s);
   }
 
-
-  function addFixStyles(obj) {
+  function addFixStyles (obj) {
     if (!obj._STYLE_) {
-      log(t("No _STYLE_ found."), obj);
+      log(t('No _STYLE_ found.'), obj);
       return;
     }
-    if ("string" !== typeof obj._STYLE_) {
-      log("Error, expecing string for _STYLE_.", typeof obj._STYLE_);
+    if (typeof obj._STYLE_ !== 'string') {
+      log('Error, expecing string for _STYLE_.', typeof obj._STYLE_);
       return;
     }
-    log(t("OK. Style found."), obj._STYLE_);
+    log(t('OK. Style found.'), obj._STYLE_);
 
-    var style = D.createElement("style");
-    //style.setAttribute("type", "text/css");
-	style.id = "acfy-fixes-style";
-	style.textContent = obj._STYLE_;
+    var style = D.createElement('style');
+    // style.setAttribute("type", "text/css");
+    style.id = 'acfy-fixes-style';
+    style.textContent = obj._STYLE_;
 
     D.head.appendChild(style);
   }
 
-
-  function ieLoadBugFix(scriptEl, callback) {
-    var ua = navigator.userAgent;
-    if (!ua.match(/MSIE [78].0/)) return;
+  function ieLoadBugFix (scriptEl, callback) {
+    if (!UA.match(/MSIE [78].0/)) return;
 
     if (scriptEl.readyState === 'loaded' || scriptEl.readyState === 'completed') {
       callback();
@@ -190,126 +178,115 @@ window.AC5U = window.AC5U || {};
     }
   }
 
-  function log(s) {
-    var ua = navigator.userAgent;
-
-    if (logp && !s.match(/Storage|Style/i)) {
+  function log (str) {
+    if (logp && !str.match(/Storage|Style/i)) {
       // Maybe we use a multi-line title attribute ?!
       // Was: logp.innerHTML += "&bull; " + s + "<br>\n"; //&rsaquo; //\203A
-      logp.title += "  › " + s + " \n";
-      logi.innerText += "› " + s + "\n";
+      logp.title += '  › %s \n'.replace(/%s/, str);
+      logi.innerText += '› %s\n'.replace(/%s/, str);
     }
 
-    if (typeof console === "object") {
-      //console.log(arguments.length > 1 ? arguments : s);
-      if (ua.match(/MSIE/)) {
-        console.log(s);
+    if (typeof console === 'object') {
+      // console.log(arguments.length > 1 ? arguments : s);
+      if (UA.match(/MSIE/)) {
+        console.log(str);
       } else {
-        console.log("AccessifyHTML5", arguments);
+        console.log('AccessifyHTML5', arguments);
       }
     }
   }
 
-
-  function logInit() {
+  function logInit () {
     if (!logp) {
       bodyClasses();
       addStyle();
 
       logp = D.createElement('div');
-      logp.id = "AC5-log";
-      logp.title = "\n " + t("Accessify HTML5 log:") +" \n\n";
-      logp.setAttribute("aria-live", "polite");
-      logp.setAttribute("role", "log");
+      logp.id = 'AC5-log';
+      logp.title = '\n ' + t('Accessify HTML5 log:') + ' \n\n';
+      logp.setAttribute('aria-live', 'polite');
+      logp.setAttribute('role', 'log');
       logp.innerHTML +=
-        '<a href="' + home_url + '">' + t("Accessify Wiki") + '</a> .. '
-        + '<span class="ico">*</span> <pre></pre>';
+        '<a href="' + HOME_URL + '">' + t('Accessify Wiki') + '</a> .. ' +
+        '<span class="ico">*</span> <pre></pre>';
+
       D.body.appendChild(logp);
 
-      logi = logp.querySelector("pre");
+      logi = logp.querySelector('pre');
     }
-    setIcon("loading");
+    setIcon('loading');
   }
 
+  function setIcon (key) {
+    const TEXTS = {
+      loading: t('Loading'),
+      not_found: t('Not found'),
+      need_fixes: t('Need fixes'), // Category: Stub.
+      unknown: t('Unknown error'),
+      fail: t('Error woops'),
+      ok: t('Success')
+    };
 
-  function setIcon(key) {
-    var
-      texts = {
-        loading: t("Loading"),
-        not_found: t("Not found"),
-        need_fixes: t("Need fixes"), //Category: Stub.
-        unknown: t("Unknown error"),
-        fail: t("Error woops"),
-        ok: t("Success")
-      },
-      el = D.querySelector("#AC5-log .ico");
+    var el = D.querySelector('#AC5-log .ico');
 
-    el.innerHTML = texts[key];
+    el.innerHTML = TEXTS[ key ];
     logp.className = key;
   }
-
 
   /* Gettext i18n/translation/localization placeholder.
    http://stackoverflow.com/questions/377961/efficient-javascript-string-replacement
   */
-  function t(msgid, args) {
+  function t (msgid, args) {
     var str = (G.texts && G.texts[msgid]) ? G.texts[msgid] : msgid;
+
     return args ? str.replace(/(%\w+)/g, function (m, key) {
       return args.hasOwnProperty(key) ? args[key] : key;
     }) : str;
   }
 
-  function i18nSetup() {
+  function i18nSetup () {
     var lang = G.lang || navigator.language;
-    log(t("Setup translation: ") + lang, G);
+    log(t('Setup translation: ') + lang, G);
     return lang;
   }
 
   // ======================================================
 
-  function browserFeatures() {
-    var W = window,
-      b_exit = false;
+  function browserFeatures () {
+    var bExit = false;
 
-    if (W.parent !== W && W.top !== W.self) {  // MSIE 8 needs the "top" test.
-      b_exit = t("We do not support frames at present");
-    }
-    else if (!DL.protocol.match(/^https?:/)) {
-      b_exit = "We only support HTTP/S urls";
-    }
-    else if (DL.href.match(/(run\/accessify-|accessify\.wikia\.com|\/X-localhost)/)) {
-    //(/(run\/accessify-|accessify.wikia.com|accessifyw[^\.]+.appspot.com|\/localhost)/)
-      b_exit = "Not fixing Accessify Wiki or localhost";
-    }
+    if (W.parent !== W && W.top !== W.self) { // MSIE 8 needs the "top" test.
+      bExit = t('We do not support frames at present');
+    } else if (!L.protocol.match(/^https?:/)) {
+      bExit = 'We only support HTTP/S urls';
+    } else if (L.href.match(/(run\/accessify-|accessify\.wikia\.com|\/X-localhost)/)) {
+      // (/(run\/accessify-|accessify.wikia.com|accessifyw[^\.]+.appspot.com|\/localhost)/)
+      bExit = 'Not fixing Accessify Wiki or localhost';
 
-    // Feature detection.
-    else if (typeof D.querySelector === "undefined") { //http://w3.org/TR/selectors-api2
-      b_exit = "Not supported by browser, w3c:selectors-api2";
-    }
-    else if (!W['sessionStorage']) {
-      b_exit = "Not supported by browser, w3c:webstorage"; //http://w3.org/TR/webstorage
-    }
-    else if (typeof JSON !== "object" || typeof JSON.parse !== "function") {
-      //https://github.com/phiggins42/has.js | http://es5.github.io/#x15.12
-      b_exit = "Not supported by browser: JSON.parse";
-    }
-    else if (isPlainText()) {
-      b_exit = "Ignoring plain-text file";
-    }
-    else if (isPluginFile()) {
-      b_exit = "Ignoring PDF or multimedia file";
+      // Feature detection.
+    } else if (typeof D.querySelector === 'undefined') { // http://w3.org/TR/selectors-api2
+      bExit = 'Not supported by browser, w3c:selectors-api2';
+    } else if (!W[ 'sessionStorage' ]) {
+      bExit = 'Not supported by browser, w3c:webstorage'; // http://w3.org/TR/webstorage
+    } else if (typeof JSON !== 'object' || typeof JSON.parse !== 'function') {
+      // https://github.com/phiggins42/has.js | http://es5.github.io/#x15.12
+      bExit = 'Not supported by browser: JSON.parse';
+    } else if (isPlainText()) {
+      bExit = 'Ignoring plain-text file';
+    } else if (isPluginFile()) {
+      bExit = 'Ignoring PDF or multimedia file';
     }
 
-    return b_exit;
+    return bExit;
   }
 
-  function isPlainText() {
+  function isPlainText () {
     // Chrome plain-text test (inc. Javascript/ CSS file views)
     // ajax.get( self ) - stackoverflow?
-    //https://github.com/rsdoiel/mimetype-js
-    var
-      ch = D.querySelectorAll("body > *"),
-      pre = D.querySelectorAll("body > pre[style]");
+    // https://github.com/rsdoiel/mimetype-js
+    var ch = D.querySelectorAll('body > *');
+
+    var pre = D.querySelectorAll('body > pre[ style ]');
 
     return ch.length < 4 && pre.length === 1;
   }
@@ -319,73 +296,72 @@ window.AC5U = window.AC5U || {};
    OU pod: feeds/2284_60secondadventuresinastronomy/22898_1__the_big_bang.m4v
    OU pod: feeds/2284_60secondadventuresinastronomy/transcript/22898_1__the_big_bang.pdf
   */
-  function isPluginFile() {
-    var
-      ch = D.querySelectorAll("body > *"),
-      plugin = D.querySelectorAll(
-        "body > embed[height='100%'], body > video[name='media']");
+  function isPluginFile () {
+    var ch = D.querySelectorAll('body > *');
+
+    var plugin = D.querySelectorAll(
+      "body > embed[ height = '100%' ], body > video[ name = media ]");
 
     return ch.length < 4 && plugin.length === 1;
   }
 
-
   // ======================================================
 
   // Storage: http://html5demos.com/storage | http://diveintohtml5.info/storage.html
-  function getStorage() {
-    var
-      dt = new Date(),
-      value,
-      storage = window[store_type],
-      delta = 0;
+  function getStorage () {
+    var dt = new Date();
+    var value;
 
-    if (!store_type || !window[store_type]) return;
+    var storage = window[STORE_TYPE];
 
-    value = storage.getItem(store_prefix + 'fixes');
+    var delta = 0;
+
+    if (!STORE_TYPE || !window[STORE_TYPE]) return;
+
+    value = storage.getItem(STORE_PREFIX + 'fixes');
 
     if (value) {
-      delta = (dt.getTime() - dt.setTime(storage.getItem(store_prefix + 'timestamp'))) / 1000;
-      if (store_max_age && store_max_age > 0 && delta > store_max_age) {
-        log(store_type + ": " + t("stale, delta: %n", {"%n": delta}), store_max_age);
+      delta = (dt.getTime() - dt.setTime(storage.getItem(STORE_PREFIX + 'timestamp'))) / 1000;
+      if (STORE_MAX_AGE && STORE_MAX_AGE > 0 && delta > STORE_MAX_AGE) {
+        log(STORE_TYPE + ': ' + t('stale, delta: %n', { '%n': delta }), STORE_MAX_AGE);
         value = false;
       } else {
-        log(store_type + ": " + t("read fixes, last update: %ns ago", {"%n": delta}), value);
+        log(STORE_TYPE + ': ' + t('read fixes, last update: %ns ago', { '%n': delta }), value);
       }
     } else {
-      log(store_type + ": " + t("empty"));
+      log(STORE_TYPE + ': ' + t('empty'));
     }
 
     return value ? JSON.parse(value) : false;
   }
 
+  function setStorage (data) {
+    var dt = new Date();
+    var storage = window[STORE_TYPE];
 
-  function setStorage(data) {
-    var
-      dt = new Date(),
-      storage = window[store_type];
+    if (!STORE_TYPE || !window[STORE_TYPE]) return;
 
-    if (!store_type || !window[store_type]) return;
+    storage.setItem(STORE_PREFIX + 'fixes', JSON.stringify(data));
+    storage.setItem(STORE_PREFIX + 'timestamp', dt.getTime());
+    storage.setItem(STORE_PREFIX + 'time', dt.toString());
 
-    storage.setItem(store_prefix + 'fixes', JSON.stringify(data));
-    storage.setItem(store_prefix + 'timestamp', dt.getTime());
-    storage.setItem(store_prefix + 'time', dt.toString());
-
-    log(store_type + ": " + t("save fixes"), data);
+    log(STORE_TYPE + ': ' + t('save fixes'), data);
   }
 
-  function bodyClasses() {
-    var host = DL.host.replace(/\./g, "-");
-    D.body.className += " " + host + "_ac5h";
+  function bodyClasses () {
+    var host = L.host.replace(/\./g, '-');
+
+    D.body.className += ' ' + host + '_ac5h';
   }
 
-
-  // Attwood, http://stackoverflow.com/questions/5223/length-of-javascript-object-ie-
-  Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
+  // Attwood, https://stackoverflow.com/questions/5223/length-of-javascript-object-ie-
+  Object.size = function (obj) {
+    var size = 0;
+    for (var key in obj) {
       if (obj.hasOwnProperty(key)) size++;
     }
     return size;
   };
 
-})();
+  // .
+})(window, document, window.location, navigator.userAgent, window.AC5U, window.AccessifyHTML5);

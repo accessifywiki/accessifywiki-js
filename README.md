@@ -28,15 +28,13 @@ We are the open, transparent accessibility middleware.
 
 ```js
 javascript:(
-  function() {
-    AC5U = {};
-    var
-      D = document,
-      s = D.createElement('script')/*T*/;
-    s.src = 'https://accessifywiki.appspot.com/browser/js/accessifyhtml5-marklet.js?x=' + (Math.random());
+  function (D, s, el, rnd, AC5U) {
+    s = D.createElement(el); /* var%20s=.. */
+    s.src = 'https://accessifywiki.appspot.com/browser/js/accessifyhtml5-marklet.js?x=' + rnd;
+    s.onerror = function (e) { console.error('JS onload error. Probably CSP?', e.target.src, e) };
     D.body.appendChild(s)
-  })
-  ();
+  }
+)(document, 0, 'script', Math.random(), {})
 ```
 
 ---
